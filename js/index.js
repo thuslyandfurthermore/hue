@@ -17,6 +17,7 @@ class Cell extends PIXI.Container {
   }
 }
 
+//i wish i were programmery enough to make this more extensible
 class Interpolation{
   constructor(start, stop, length, ref){
     this.start = start;
@@ -62,8 +63,8 @@ let x = app.screen.width;
 let y = app.screen.height;
 
 let cells = [];
-let cellsX = 7;
-let cellsY = 9;
+let cellsX = 6;
+let cellsY = 7;
 let cellWidth = (x - x / 5) / cellsX;
 let cellHeight = (y - y / 5) / cellsY;
 let colorsLeft = getRGBlerpRangeInOklabSpace('FBCEE9', 'ED40B8', cellsY);
@@ -73,6 +74,18 @@ let xInterp = [];
 let yInterp = [];
 let scInterp = [];
 let moves = 0;
+
+let winText = new PIXI.Text(`completed in ${moves} moves`, {
+     fontFamily: 'Arial',
+     fontSize: 24,
+     fill: 0xffddee,
+     align: 'center',
+ });
+winText.pivot.set(winText.width / 2, winText.height / 2);
+winText.x = x / 2;
+winText.y = 40;
+winText.visible = false;
+app.stage.addChild(winText);
 
 // Add two containers to center things on the page, so one set will always be on top
 const container = new PIXI.Container();
@@ -84,6 +97,54 @@ const topContainer = new PIXI.Container();
 topContainer.x = x / 10;
 topContainer.y = y / 10 + y / 20;
 app.stage.addChild(topContainer);
+
+
+function menuSwip(){
+  if (menuActive){
+    xInterp.push(new Interpolation(0, - menuWidth, 20, menu));
+    menuActive = false;
+  } else {
+    xInterp.push(new Interpolation(- menuWidth, 0, 20, menu));
+    menuActive = true;
+  }
+}
+
+
+//all this is menu shit lol
+menuWidth = x / 2;
+const menu = new PIXI.Container();
+menu.x = - menuWidth;
+menuActive = false;
+app.stage.addChild(menu);
+menuPane = new PIXI.Graphics();
+menuPane.beginFill('#888');
+menuPane.drawRect(0,0,menuWidth,y);
+menu.addChild(menuPane);
+menuButton = new PIXI.Graphics();
+menuButton.beginFill('#888');
+menuButton.drawRect(menuWidth * 1.04, x * 0.02, x / 10, x / 10);
+menu.addChild(menuButton);
+menuButton.on('pointerup', menuSwip);
+menuButton.eventMode = 'dynamic';
+buttonHeight = y / 15;
+menuNewGame = new PIXI.Graphics();
+menuNewGame.beginFill('#444');
+menuNewGame.drawRect(0, 0, menuWidth, buttonHeight);
+menu.addChild(menuNewGame);
+menuNewGame.on('pointerup', setup);
+menuNewGame.eventMode = 'dynamic';
+const text = new PIXI.Text('new game', {
+     fontFamily: 'Roboto',
+     fontSize: 18,
+     fill: 0xcccccc,
+     align: 'center',
+ });
+text.x = menuWidth / 2;
+text.y = buttonHeight / 2;
+text.pivot.set(text.width / 2, text.height / 2);
+menu.addChild(text);
+
+
 
 
 function checkIfSolved(){
@@ -123,11 +184,14 @@ function swapCells(cell1, cell2, auto = false){
       }
       //u won!
       console.log("completed in " + moves + " moves");
+      winText.text = `completed in ${moves} moves`;
+      winText.visible = true;
     }
   }
 }
 
 function cellClicked(e){
+  if (!menuActive){
   console.log('clicked ' + this.parent.currentX + ', ' + this.parent.currentY);
   if (!cellSelected){
     if (!this.parent.locked){
@@ -151,30 +215,60 @@ function cellClicked(e){
     this.parent.setParent(container);
     cellSelected = null;
   }
+  }
+}
+
+function distanceColors(color1, color2){
+  deltaColor = {
+    'L': color1.L - color2.L,
+    'a': color1.a - color2.a,
+    'b': color1.b - color2.b
+  }
+  let minDelta = 0.3;
+  
+  let [lowestItems] = Object.entries(deltaColor).sort(([ ,v1], [ ,v2]) => v1 - v2);
+  if (color1[lowestItems[0]] > 0){
+    color2[lowestItems[0]] = - minDelta;
+  } else {
+    color2[lowestItems[0]] = minDelta;
+  }
+  return color2;
+}
+
+function randColor(baseColor){
+  let rndScale = 0.7;
+  let minDelta = 0.3;
+  let deltaColor = {
+    'L': Math.random() * rndScale - rndScale * 0.25,
+    'a': Math.random() * rndScale - rndScale / 2,
+    'b': Math.random() * rndScale - rndScale / 2
+  };
+  
+  return {
+    'L': baseColor.L + deltaColor.L,
+    'a': baseColor.a + deltaColor.a,
+    'b': baseColor.b + deltaColor.b
+  };
 }
 
 function randColors(){
   let deltaColor = 0.7;
+  
   let color1 = {
     'L': Math.random(),
     'a': Math.random() * 0.6 - 0.3,
     'b': Math.random() * 0.5 - 0.25
   };
-  let color2 = {
-    'L': color1.L + Math.random() * deltaColor - deltaColor * 0.25,
-    'a': color1.a + Math.random() * deltaColor - deltaColor / 2,
-    'b': color1.b + Math.random() * deltaColor - deltaColor / 2
-  };
-  let color3 = {
-    'L': color1.L + Math.random() * deltaColor - deltaColor * 0.25,
-    'a': color1.a + Math.random() * deltaColor - deltaColor / 2,
-    'b': color1.b + Math.random() * deltaColor - deltaColor / 2
-  };
-  let color4 = {
-    'L': color1.L + Math.random() * deltaColor - deltaColor * 0.25,
-    'a': color1.a + Math.random() * deltaColor - deltaColor / 2,
-    'b': color1.b + Math.random() * deltaColor - deltaColor / 2
-  };
+  let color2 = randColor(color1);
+  let color3 = randColor(color1);
+  let color4 = randColor(color1);
+  
+  distanceColors(color1, color2);
+  distanceColors(color2, color3);
+  //distanceColors(color3, color4);
+  distanceColors(color4, color2);
+  //distanceColors(color4, color1);
+  
   colorsLeft = getRGBlerpRangeInOklabSpace(rgbToHex(oklabToSRGB(color1)),
     rgbToHex(oklabToSRGB(color2)), cellsY);
     
@@ -194,6 +288,13 @@ function setup(){
   cellSelected = null;
   
   randColors();
+  
+  winText.visible = false;
+  
+  if (menuActive){
+    //xInterp.push(new Interpolation(0, - menuWidth, 20, menu));
+    //menuActive = false;
+  }
   
   //lets make some cells
   for(let i = 0; i < cellsX; i++){
@@ -276,7 +377,9 @@ app.ticker.add((delta) => {
     } catch {
       newVal = fallback;
     }
-    currentRef.x = newVal;
+    try {
+      currentRef.x = newVal;
+    } catch {}
   }
   for (let i in yInterp){
     let currentRef = yInterp[i].ref;
@@ -287,7 +390,8 @@ app.ticker.add((delta) => {
     } catch {
       newVal = fallback;
     }
-    currentRef.y = newVal;
+    try{ currentRef.y = newVal;}
+    catch{}
   }
   for (let i in scInterp){
     let currentRef = scInterp[i].ref;
@@ -298,7 +402,8 @@ app.ticker.add((delta) => {
     } catch {
       newVal = fallback;
     }
-    currentRef.graphics.scale.set(newVal);
+    try{ currentRef.graphics.scale.set(newVal); }
+    catch{}
   }
   xInterp = xInterp.filter(Boolean);
   yInterp = yInterp.filter(Boolean);
