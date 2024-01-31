@@ -151,6 +151,13 @@ function setDisplay(){
   textSize.x = menuWidth / 2;
   textSize.y = buttonHeight * 2;
   textSize.pivot.set(textSize.width / 2, textSize.height / 2);
+  menuSource.clear();
+  menuSource.beginFill('#444');
+  menuSource.y = y - buttonHeight;
+  menuSource.drawRect(0, 0, menuWidth, buttonHeight);
+  textSource.x = menuWidth / 2;
+  textSource.y = buttonHeight / 2;
+  textSource.pivot.set(textSource.width / 2, textSource.height / 2);
 }
 
 let winText = new PIXI.Text(`completed in ${moves} moves`, {
@@ -188,7 +195,7 @@ function menuSwip(){
 }
 
 
-//all this is menu shit lol
+//constructing menu components. theyre arranged in setDisplay()
 const menu = new PIXI.Container();
 menuWidth = x / 2;
 menuActive = false;
@@ -203,7 +210,6 @@ menuButton.eventMode = 'dynamic';
 buttonHeight = y / 10;
 
 menuNewGame = new PIXI.Graphics();
-
 menu.addChild(menuNewGame);
 menuNewGame.on('pointerup', setup);
 menuNewGame.eventMode = 'dynamic';
@@ -215,9 +221,7 @@ const textNg = new PIXI.Text('new game', {
  });
 menu.addChild(textNg);
 
-
 menuWidthPlus = new PIXI.Graphics();
-
 menu.addChild(menuWidthPlus);
 menuWidthPlus.on('pointerup', widthPlus);
 menuWidthPlus.eventMode = 'dynamic';
@@ -227,11 +231,9 @@ const textWidthPlus = new PIXI.Text('+', {
      fill: 0xcccccc,
      align: 'center',
  });
-
 menuWidthPlus.addChild(textWidthPlus);
 
 menuWidthMinus = new PIXI.Graphics();
-
 menu.addChild(menuWidthMinus);
 menuWidthMinus.on('pointerup', widthMinus);
 menuWidthMinus.eventMode = 'dynamic';
@@ -244,7 +246,6 @@ const textWidthMinus = new PIXI.Text('-', {
 menuWidthMinus.addChild(textWidthMinus);
 
 menuHeightPlus = new PIXI.Graphics();
-
 menu.addChild(menuHeightPlus);
 menuHeightPlus.on('pointerup', heightPlus);
 menuHeightPlus.eventMode = 'dynamic';
@@ -254,11 +255,9 @@ const textHeightPlus = new PIXI.Text('+', {
      fill: 0xcccccc,
      align: 'center',
  });
-
 menuHeightPlus.addChild(textHeightPlus);
 
 menuHeightMinus = new PIXI.Graphics();
-
 menu.addChild(menuHeightMinus);
 menuHeightMinus.on('pointerup', heightMinus);
 menuHeightMinus.eventMode = 'dynamic';
@@ -268,19 +267,26 @@ const textHeightMinus = new PIXI.Text('-', {
      fill: 0xcccccc,
      align: 'center',
  });
-
 menuHeightMinus.addChild(textHeightMinus);
-
-
-
-const textSize = new PIXI.Text(String(cellsX + '×' + cellsY), {
+const textSize = new PIXI.Text(String(cellsX + 'x' + cellsY), {
      fontFamily: 'Roboto',
      fontSize: 20,
      fill: 0xcccccc,
      align: 'center',
  });
-
 menu.addChild(textSize);
+
+let menuSource = new PIXI.Graphics();
+menu.addChild(menuSource);
+menuSource.on('pointerup', (event) => {window.location = 'https://github.com/thuslyandfurthermore/hue'});
+menuSource.eventMode = 'dynamic';
+const textSource = new PIXI.Text('source code', {
+  fontFamily: 'Roboto',
+  fontSize: 18,
+  fill: 0xcccccc,
+  align: 'center'
+});
+menuSource.addChild(textSource);
 
 
 
@@ -410,7 +416,7 @@ function randColor(baseColor){
 }
 
 function randColors(){
-  let deltaColor = 0.7;
+  let deltaColor = 0.7; 
   
   let color1 = {
     'L': Math.random(),
@@ -442,16 +448,12 @@ function setup(){
   for (let i in cells){
     cells[i].destroy();
   }
-  
   cells = [];
-  
   moves = 0;
   cellSelected = null;
-  
-  randColors();
-  
   winText.visible = false;
   
+  randColors();
   setDisplay();
   
   if (menuActive){
@@ -460,8 +462,10 @@ function setup(){
   }
   
   //lets make some cells
-  for(let i = 0; i < cellsX; i++){
-    for(let j = 0; j < cellsY; j++){
+  for(let i = 0; i < cellsX; i++){ //i is x
+    for(let j = 0; j < cellsY; j++){ //j is y
+      
+      //lock the corner cells
       let cellLocked = false;
       if ((i == 0 || i == cellsX - 1) && (j == 0 || j == cellsY - 1)) { cellLocked = true; }
     
@@ -484,7 +488,7 @@ function setup(){
         obj.drawCircle(cellWidth, cellHeight, cellHeight * 0.05);
       }
     
-    
+      //click callback
       obj.on('pointerup', cellClicked);
       obj.eventMode = 'dynamic';
   
@@ -502,35 +506,43 @@ function setup(){
 
 
 let elapsed = 0.0;
-// Add a ticker callback to move the sprite back and forth
+// ticker is what keeps track of the time etc
 app.ticker.add((delta) => {
   elapsed += delta;
   
+  //wiggle a the selected cell
   if (cellSelected){
     cellSelected.rotation = 0.0 + Math.sin(elapsed/ 7.0) / 8;
   }
   
-  if (elapsed < 350){
+  //startup animation
+  if (elapsed < (cells.length * 9)){
     for (let i in cells){
+      //in...
       if (cells[i].anim == 0 && elapsed > i){
         scInterp.push(new Interpolation(0, 1, 30, cells[i]));
         cells[i].anim++;
       }
-      if (cells[i].anim == 1 && elapsed - 120 > i && !cells[i].locked){
+      //out...
+      if (cells[i].anim == 1 && elapsed - (cells.length * 2 + 40) > i && !cells[i].locked){
         scInterp.push(new Interpolation(1, 0, 20, cells[i]));
         cells[i].anim++;
       }
-      if (cells[i].anim == 2 && elapsed - 190 > i ){
+      //swap every cell at least once...
+      if (cells[i].anim == 2 && elapsed - (cells.length * 3.5 + 40) > i ){
         swapCells(cells[i], cells[Math.floor(Math.random() * cells.length)], true);
         cells[i].anim++;
       }
-      if (cells[i].anim == 3 && elapsed - 240 > i && !cells[i].locked){
+      //and back in.
+      if (cells[i].anim == 3 && elapsed - (cells.length * 5 + 40) > i && !cells[i].locked){
         scInterp.push(new Interpolation(0, 1, 20, cells[i]));
         cells[i].anim++;
       }
     }
   }
   
+  //this should be like, genericized by someone
+  //this is what calls the interpolation get method
   for (let i in xInterp){
     let currentRef = xInterp[i].ref;
     let fallback = xInterp[i].stop;
