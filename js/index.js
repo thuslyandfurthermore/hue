@@ -74,6 +74,84 @@ let xInterp = [];
 let yInterp = [];
 let scInterp = [];
 let moves = 0;
+let epsilon = 1;
+
+function setDisplay(){
+  x = app.screen.width;
+  y = app.screen.height;
+  
+  if (Math.min(x, y) == x){
+    cellWidth = x - x / 5;
+    cellHeight = 16 / 9 * cellWidth;
+    cellWidth /= cellsX;
+    cellHeight /= cellsY;
+    
+ 
+  } else {
+    cellHeight = y - y / 5;
+    cellWidth = 9 / 16 * cellHeight;
+    cellWidth /= cellsX;
+    cellHeight /= cellsY;
+    
+  }
+  container.x = x / 2 - (cellWidth * cellsX / 2);
+  container.y = y / 2 - (cellHeight * cellsY / 2);
+    
+  topContainer.x = container.x;
+  topContainer.y = container.y;
+  menuWidth = x / 2;
+  buttonHeight = y / 10;
+  menu.x = - menuWidth;
+  menuPane.clear();
+  menuPane.beginFill('#888');
+  menuPane.drawRect(0,0,menuWidth,y);
+  menuButton.clear();
+  menuButton.beginFill('#888');
+  menuButton.drawRect(menuWidth * 1.04, x * 0.02, buttonHeight, buttonHeight);
+  menuNewGame.clear();
+  menuNewGame.beginFill('#444');
+  menuNewGame.drawRect(0, 0, menuWidth, buttonHeight - epsilon);
+  textNg.x = menuWidth / 2;
+  textNg.y = buttonHeight / 2;
+  textNg.pivot.set(textNg.width / 2, textNg.height / 2);
+  menuWidthPlus.clear();
+  menuWidthPlus.beginFill('#666');
+  menuWidthPlus.x = menuWidth * 2 / 3;
+  menuWidthPlus.y = buttonHeight;
+  menuWidthPlus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
+  
+  textWidthPlus.x = menuWidth  / 6;
+  textWidthPlus.y = buttonHeight / 2;
+  textWidthPlus.pivot.set(textWidthPlus.width / 2, textWidthPlus.height / 2);
+  menuWidthMinus.clear();
+  menuWidthMinus.beginFill('#666');
+  menuWidthMinus.y = buttonHeight;
+  menuWidthMinus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
+  
+  textWidthMinus.x = menuWidth  / 6;
+  textWidthMinus.y = buttonHeight / 2;
+  textWidthMinus.pivot.set(textWidthMinus.width / 2, textWidthMinus.height / 2);
+  
+  menuHeightPlus.clear();
+  menuHeightPlus.beginFill('#666');
+  menuHeightPlus.x = menuWidth * 2 / 3;
+  menuHeightPlus.y = buttonHeight * 2;
+  menuHeightPlus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
+  textHeightPlus.x = menuWidth / 6;
+  textHeightPlus.y = buttonHeight / 2;
+  textHeightPlus.pivot.set(textHeightPlus.width / 2, textHeightPlus.height / 2);
+  menuHeightMinus.clear();
+  menuHeightMinus.beginFill('#666');
+  menuHeightMinus.y = buttonHeight * 2;
+  menuHeightMinus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
+  textHeightMinus.x = menuWidth / 6;
+  textHeightMinus.y = buttonHeight / 2;
+  textHeightMinus.pivot.set(textHeightMinus.width / 2, textHeightMinus.height / 2);
+  
+  textSize.x = menuWidth / 2;
+  textSize.y = buttonHeight * 2;
+  textSize.pivot.set(textSize.width / 2, textSize.height / 2);
+}
 
 let winText = new PIXI.Text(`completed in ${moves} moves`, {
      fontFamily: 'Arial',
@@ -83,7 +161,7 @@ let winText = new PIXI.Text(`completed in ${moves} moves`, {
  });
 winText.pivot.set(winText.width / 2, winText.height / 2);
 winText.x = x / 2;
-winText.y = 40;
+winText.y = y / 15;
 winText.visible = false;
 app.stage.addChild(winText);
 
@@ -111,40 +189,120 @@ function menuSwip(){
 
 
 //all this is menu shit lol
-menuWidth = x / 2;
 const menu = new PIXI.Container();
-menu.x = - menuWidth;
+menuWidth = x / 2;
 menuActive = false;
 app.stage.addChild(menu);
 menuPane = new PIXI.Graphics();
-menuPane.beginFill('#888');
-menuPane.drawRect(0,0,menuWidth,y);
 menu.addChild(menuPane);
 menuButton = new PIXI.Graphics();
-menuButton.beginFill('#888');
-menuButton.drawRect(menuWidth * 1.04, x * 0.02, x / 10, x / 10);
 menu.addChild(menuButton);
 menuButton.on('pointerup', menuSwip);
 menuButton.eventMode = 'dynamic';
-buttonHeight = y / 15;
+
+buttonHeight = y / 10;
+
 menuNewGame = new PIXI.Graphics();
-menuNewGame.beginFill('#444');
-menuNewGame.drawRect(0, 0, menuWidth, buttonHeight);
+
 menu.addChild(menuNewGame);
 menuNewGame.on('pointerup', setup);
 menuNewGame.eventMode = 'dynamic';
-const text = new PIXI.Text('new game', {
+const textNg = new PIXI.Text('new game', {
      fontFamily: 'Roboto',
      fontSize: 18,
      fill: 0xcccccc,
      align: 'center',
  });
-text.x = menuWidth / 2;
-text.y = buttonHeight / 2;
-text.pivot.set(text.width / 2, text.height / 2);
-menu.addChild(text);
+menu.addChild(textNg);
 
 
+menuWidthPlus = new PIXI.Graphics();
+
+menu.addChild(menuWidthPlus);
+menuWidthPlus.on('pointerup', widthPlus);
+menuWidthPlus.eventMode = 'dynamic';
+const textWidthPlus = new PIXI.Text('+', {
+     fontFamily: 'Roboto',
+     fontSize: 18,
+     fill: 0xcccccc,
+     align: 'center',
+ });
+
+menuWidthPlus.addChild(textWidthPlus);
+
+menuWidthMinus = new PIXI.Graphics();
+
+menu.addChild(menuWidthMinus);
+menuWidthMinus.on('pointerup', widthMinus);
+menuWidthMinus.eventMode = 'dynamic';
+const textWidthMinus = new PIXI.Text('-', {
+     fontFamily: 'Roboto',
+     fontSize: 18,
+     fill: 0xcccccc,
+     align: 'center',
+ });
+menuWidthMinus.addChild(textWidthMinus);
+
+menuHeightPlus = new PIXI.Graphics();
+
+menu.addChild(menuHeightPlus);
+menuHeightPlus.on('pointerup', heightPlus);
+menuHeightPlus.eventMode = 'dynamic';
+const textHeightPlus = new PIXI.Text('+', {
+     fontFamily: 'Roboto',
+     fontSize: 18,
+     fill: 0xcccccc,
+     align: 'center',
+ });
+
+menuHeightPlus.addChild(textHeightPlus);
+
+menuHeightMinus = new PIXI.Graphics();
+
+menu.addChild(menuHeightMinus);
+menuHeightMinus.on('pointerup', heightMinus);
+menuHeightMinus.eventMode = 'dynamic';
+const textHeightMinus = new PIXI.Text('-', {
+     fontFamily: 'Roboto',
+     fontSize: 18,
+     fill: 0xcccccc,
+     align: 'center',
+ });
+
+menuHeightMinus.addChild(textHeightMinus);
+
+
+
+const textSize = new PIXI.Text(String(cellsX + '×' + cellsY), {
+     fontFamily: 'Roboto',
+     fontSize: 20,
+     fill: 0xcccccc,
+     align: 'center',
+ });
+
+menu.addChild(textSize);
+
+
+
+function widthPlus(){
+  cellsX++;
+  textSize.text = String(cellsX + '×' + cellsY);
+}
+
+function widthMinus(){
+  cellsX--;
+  textSize.text = String(cellsX + '×' + cellsY);
+}
+
+function heightPlus(){
+  cellsY++;
+  textSize.text = String(cellsX + '×' + cellsY);
+}
+
+function heightMinus(){
+  cellsY--;
+  textSize.text = String(cellsX + '×' + cellsY);
+}
 
 
 function checkIfSolved(){
@@ -284,6 +442,9 @@ function setup(){
   for (let i in cells){
     cells[i].destroy();
   }
+  
+  cells = [];
+  
   moves = 0;
   cellSelected = null;
   
@@ -291,9 +452,11 @@ function setup(){
   
   winText.visible = false;
   
+  setDisplay();
+  
   if (menuActive){
     //xInterp.push(new Interpolation(0, - menuWidth, 20, menu));
-    //menuActive = false;
+    menuActive = false;
   }
   
   //lets make some cells
