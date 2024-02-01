@@ -1,5 +1,12 @@
 // Create the application helper and add its render target to the page
-let app = new PIXI.Application({ resizeTo: window });
+const scale = 1;
+const app = new PIXI.Application({
+  width: window.innerWidth * scale,
+  height: window.innerHeight * scale,
+  resolution: 1,
+  roundPixels: true,
+  resizeTo: window
+});
       document.body.appendChild(app.view);
 
 class Cell extends PIXI.Container {
@@ -63,8 +70,8 @@ let x = app.screen.width;
 let y = app.screen.height;
 
 let cells = [];
-let cellsX = 6;
-let cellsY = 7;
+let cellsX = 5;
+let cellsY = 6;
 let cellWidth = (x - x / 5) / cellsX;
 let cellHeight = (y - y / 5) / cellsY;
 let colorsLeft = getRGBlerpRangeInOklabSpace('FBCEE9', 'ED40B8', cellsY);
@@ -85,22 +92,26 @@ function setDisplay(){
     cellHeight = 16 / 9 * cellWidth;
     cellWidth /= cellsX;
     cellHeight /= cellsY;
-    
- 
+    menuWidth = x / 2;
+    buttonHeight = y / 10;
   } else {
     cellHeight = y - y / 5;
     cellWidth = 9 / 16 * cellHeight;
     cellWidth /= cellsX;
     cellHeight /= cellsY;
-    
+    menuWidth = x / 3;
+    buttonHeight = y / 6;
   }
   container.x = x / 2 - (cellWidth * cellsX / 2);
   container.y = y / 2 - (cellHeight * cellsY / 2);
     
   topContainer.x = container.x;
   topContainer.y = container.y;
-  menuWidth = x / 2;
-  buttonHeight = y / 10;
+  winText.scale.set(1 / scale);
+  winText.pivot.set(winText.width / 2 * scale, winText.height / 2 * scale);
+  winText.x = x / 2;
+  winText.y = y / 2;
+  
   menu.x = - menuWidth;
   menuPane.clear();
   menuPane.beginFill('#888');
@@ -113,64 +124,52 @@ function setDisplay(){
   menuNewGame.drawRect(0, 0, menuWidth, buttonHeight - epsilon);
   textNg.x = menuWidth / 2;
   textNg.y = buttonHeight / 2;
-  textNg.pivot.set(textNg.width / 2, textNg.height / 2);
+  textNg.pivot.set(textNg.width / 2 * scale, textNg.height / 2 * scale);
   menuWidthPlus.clear();
   menuWidthPlus.beginFill('#666');
-  menuWidthPlus.x = menuWidth * 2 / 3;
   menuWidthPlus.y = buttonHeight;
   menuWidthPlus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
   
-  textWidthPlus.x = menuWidth  / 6;
+  textWidthPlus.x = menuWidth / 6;
   textWidthPlus.y = buttonHeight / 2;
-  textWidthPlus.pivot.set(textWidthPlus.width / 2, textWidthPlus.height / 2);
+  textWidthPlus.pivot.set(textWidthPlus.width / 2 * scale, textWidthPlus.height / 2 * scale);
   menuWidthMinus.clear();
   menuWidthMinus.beginFill('#666');
-  menuWidthMinus.y = buttonHeight;
+  menuWidthMinus.y = buttonHeight * 2;
   menuWidthMinus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
   
   textWidthMinus.x = menuWidth  / 6;
   textWidthMinus.y = buttonHeight / 2;
-  textWidthMinus.pivot.set(textWidthMinus.width / 2, textWidthMinus.height / 2);
+  textWidthMinus.pivot.set(textWidthMinus.width / 2 * scale, textWidthMinus.height / 2 * scale);
   
   menuHeightPlus.clear();
   menuHeightPlus.beginFill('#666');
   menuHeightPlus.x = menuWidth * 2 / 3;
-  menuHeightPlus.y = buttonHeight * 2;
+  menuHeightPlus.y = buttonHeight;
   menuHeightPlus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
   textHeightPlus.x = menuWidth / 6;
   textHeightPlus.y = buttonHeight / 2;
-  textHeightPlus.pivot.set(textHeightPlus.width / 2, textHeightPlus.height / 2);
+  textHeightPlus.pivot.set(textHeightPlus.width / 2 * scale, textHeightPlus.height / 2 * scale);
   menuHeightMinus.clear();
   menuHeightMinus.beginFill('#666');
+  menuHeightMinus.x = menuWidth * 2 / 3;
   menuHeightMinus.y = buttonHeight * 2;
   menuHeightMinus.drawRect(0, 0, menuWidth / 3, buttonHeight - epsilon);
   textHeightMinus.x = menuWidth / 6;
   textHeightMinus.y = buttonHeight / 2;
-  textHeightMinus.pivot.set(textHeightMinus.width / 2, textHeightMinus.height / 2);
+  textHeightMinus.pivot.set(textHeightMinus.width / 2 * scale, textHeightMinus.height / 2 * scale);
   
   textSize.x = menuWidth / 2;
   textSize.y = buttonHeight * 2;
-  textSize.pivot.set(textSize.width / 2, textSize.height / 2);
+  textSize.pivot.set(textSize.width / 2 * scale, textSize.height / 2 * scale);
   menuSource.clear();
   menuSource.beginFill('#444');
   menuSource.y = y - buttonHeight;
   menuSource.drawRect(0, 0, menuWidth, buttonHeight);
   textSource.x = menuWidth / 2;
   textSource.y = buttonHeight / 2;
-  textSource.pivot.set(textSource.width / 2, textSource.height / 2);
+  textSource.pivot.set(textSource.width / 2 * scale, textSource.height / 2 * scale);
 }
-
-let winText = new PIXI.Text(`completed in ${moves} moves`, {
-     fontFamily: 'Arial',
-     fontSize: 24,
-     fill: 0xffddee,
-     align: 'center',
- });
-winText.pivot.set(winText.width / 2, winText.height / 2);
-winText.x = x / 2;
-winText.y = y / 15;
-winText.visible = false;
-app.stage.addChild(winText);
 
 // Add two containers to center things on the page, so one set will always be on top
 const container = new PIXI.Container();
@@ -195,6 +194,15 @@ function menuSwip(){
 }
 
 
+let winText = new PIXI.Text(`completed in ${moves} moves`, {
+     fontFamily: 'cursive',
+     fontSize: 30 * scale,
+     fill: 0xffddee,
+     align: 'center',
+ });
+winText.visible = false;
+app.stage.addChild(winText);
+
 //constructing menu components. theyre arranged in setDisplay()
 const menu = new PIXI.Container();
 menuWidth = x / 2;
@@ -214,11 +222,12 @@ menu.addChild(menuNewGame);
 menuNewGame.on('pointerup', setup);
 menuNewGame.eventMode = 'dynamic';
 const textNg = new PIXI.Text('new game', {
-     fontFamily: 'Roboto',
-     fontSize: 18,
+     fontFamily: 'cursive',
+     fontSize: 30 * scale,
      fill: 0xcccccc,
      align: 'center',
  });
+textNg.scale.set(1 / scale);
 menu.addChild(textNg);
 
 menuWidthPlus = new PIXI.Graphics();
@@ -226,23 +235,25 @@ menu.addChild(menuWidthPlus);
 menuWidthPlus.on('pointerup', widthPlus);
 menuWidthPlus.eventMode = 'dynamic';
 const textWidthPlus = new PIXI.Text('+', {
-     fontFamily: 'Roboto',
-     fontSize: 18,
+     fontFamily: 'cursive',
+     fontSize: 30 * scale,
      fill: 0xcccccc,
      align: 'center',
  });
+textWidthPlus.scale.set(1 / scale);
 menuWidthPlus.addChild(textWidthPlus);
 
 menuWidthMinus = new PIXI.Graphics();
 menu.addChild(menuWidthMinus);
 menuWidthMinus.on('pointerup', widthMinus);
 menuWidthMinus.eventMode = 'dynamic';
-const textWidthMinus = new PIXI.Text('-', {
-     fontFamily: 'Roboto',
-     fontSize: 18,
+const textWidthMinus = new PIXI.Text('–', {
+     fontFamily: 'cursive',
+     fontSize: 30 * scale,
      fill: 0xcccccc,
      align: 'center',
  });
+textWidthMinus.scale.set(1 / scale);
 menuWidthMinus.addChild(textWidthMinus);
 
 menuHeightPlus = new PIXI.Graphics();
@@ -250,30 +261,33 @@ menu.addChild(menuHeightPlus);
 menuHeightPlus.on('pointerup', heightPlus);
 menuHeightPlus.eventMode = 'dynamic';
 const textHeightPlus = new PIXI.Text('+', {
-     fontFamily: 'Roboto',
-     fontSize: 18,
+     fontFamily: 'cursive',
+     fontSize: 30 * scale,
      fill: 0xcccccc,
      align: 'center',
  });
+textHeightPlus.scale.set(1 / scale)
 menuHeightPlus.addChild(textHeightPlus);
 
 menuHeightMinus = new PIXI.Graphics();
 menu.addChild(menuHeightMinus);
 menuHeightMinus.on('pointerup', heightMinus);
 menuHeightMinus.eventMode = 'dynamic';
-const textHeightMinus = new PIXI.Text('-', {
-     fontFamily: 'Roboto',
-     fontSize: 18,
+const textHeightMinus = new PIXI.Text('–', {
+     fontFamily: 'cursive',
+     fontSize: 30 * scale,
      fill: 0xcccccc,
      align: 'center',
  });
+textHeightMinus.scale.set(1 / scale);
 menuHeightMinus.addChild(textHeightMinus);
 const textSize = new PIXI.Text(String(cellsX + 'x' + cellsY), {
-     fontFamily: 'Roboto',
-     fontSize: 20,
+     fontFamily: 'cursive',
+     fontSize: 30 * scale,
      fill: 0xcccccc,
      align: 'center',
  });
+textSize.scale.set(1 / scale);
 menu.addChild(textSize);
 
 let menuSource = new PIXI.Graphics();
@@ -281,11 +295,12 @@ menu.addChild(menuSource);
 menuSource.on('pointerup', (event) => {window.location = 'https://github.com/thuslyandfurthermore/hue'});
 menuSource.eventMode = 'dynamic';
 const textSource = new PIXI.Text('source code', {
-  fontFamily: 'Roboto',
-  fontSize: 18,
+  fontFamily: 'cursive',
+  fontSize: 30 * scale,
   fill: 0xcccccc,
   align: 'center'
 });
+textSource.scale.set(1 / scale);
 menuSource.addChild(textSource);
 
 
@@ -516,25 +531,25 @@ app.ticker.add((delta) => {
   }
   
   //startup animation
-  if (elapsed < (cells.length * 9)){
+  if (elapsed < (cells.length * 4 + 150)){
     for (let i in cells){
       //in...
-      if (cells[i].anim == 0 && elapsed > i){
+      if (cells[i].anim == 0 && elapsed - 10 > i){
         scInterp.push(new Interpolation(0, 1, 30, cells[i]));
         cells[i].anim++;
       }
       //out...
-      if (cells[i].anim == 1 && elapsed - (cells.length * 2 + 40) > i && !cells[i].locked){
+      if (cells[i].anim == 1 && elapsed - (cells.length + 60) > i && !cells[i].locked){
         scInterp.push(new Interpolation(1, 0, 20, cells[i]));
         cells[i].anim++;
       }
       //swap every cell at least once...
-      if (cells[i].anim == 2 && elapsed - (cells.length * 3.5 + 40) > i ){
+      if (cells[i].anim == 2 && elapsed - (cells.length * 2 + 80) > i ){
         swapCells(cells[i], cells[Math.floor(Math.random() * cells.length)], true);
         cells[i].anim++;
       }
       //and back in.
-      if (cells[i].anim == 3 && elapsed - (cells.length * 5 + 40) > i && !cells[i].locked){
+      if (cells[i].anim == 3 && elapsed - (cells.length * 3 + 92) > i && !cells[i].locked){
         scInterp.push(new Interpolation(0, 1, 20, cells[i]));
         cells[i].anim++;
       }
